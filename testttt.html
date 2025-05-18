@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Custom Homepage with Video Background and Music</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        /* Reset and base */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0; padding: 0;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+        body {
+            color: #fff;
+            user-select: none;
+            position: relative;
+        }
+
+        /* Video background using video tag covering entire screen */
+        #video-bg-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            z-index: -1;
+        }
+        #video-bg-wrapper video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Blurred top nav bar with black background */
+        #top-nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90vw;
+            max-width: 320px; /* Match the music box width */
+            height: 50px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Spread items */
+            padding: 0 20px;
+            z-index: 30;
+            user-select: none;
+        }
+
+        #top-nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            user-select: text;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        #top-nav a:hover {
+            color: #00ff00; /* Change text color to green on hover */
+            text-shadow: 0 0 10px #00ff00; /* Glowing effect */
+        }
+
+        /* Active link color */
+        .active {
+            color: #00ff00; /* Green for active page */
+            text-shadow: 0 0 10px #00ff00; /* Glowing effect */
+        }
+
+        /* Main content container with no background or box shadow */
+        #content-container {
+            position: relative;
+            z-index: 10;
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 90px 1.5rem 3rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+            user-select: text;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        #homepage {
+            width: 100%;
+            text-align: center;
+        }
+
+        #homepage .avatar {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            object-fit: cover;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            background: #eee;
+            border: 3px solid rgba(255 255 255 / 0.3);
+        }
+
+        #homepage .name {
+            font-size: 2.4rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+        }
+        #homepage .bio {
+            font-weight: 400;
+            font-size: 1.1rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.9;
+            line-height: 1.4;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+        }
+
+        /* Links Page Styles */
+        .link-box {
+            width: 150px; /* Set width */
+            height: 150px; /* Set height */
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px;
+            transition: background 0.3s ease;
+        }
+        .link-box:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Audio Control Box Styles */
+        #audio-control-box {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            height: auto; /* Allow height to adjust */
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            border-radius: 15px;
+            padding: 12px 20px;
+            display: flex;
+            flex-direction: column; /* Change to column for vertical layout */
+            align-items: center;
+            gap: 5px; /* Adjust gap between buttons and progress bar */
+            box-shadow: 0 6px 18px rgba(0,0,0,0.7);
+            user-select: none;
+            width: 90%;
+            max-width: 320px;
+            z-index: 20;
+        }
+        #audio-control-box .button-container {
+            display: flex;
+            justify-content: space-between; /* Space buttons evenly */
+            width: 100%; /* Full width for button container */
+        }
+        #audio-control-box button {
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 2px; /* Smaller padding for smaller buttons */
+            transition: color 0.3s ease;
+            opacity: 0.65; /* Increased transparency for skip buttons */
+            user-select: none;
+        }
+        #audio-control-box button img {
+            width: 20px; /* Size for play/pause button */
+            height: 24px; /* Size for play/pause button */
+        }
+        #audio-control-box button.skip img {
+            width: 20px; /* Smaller size for skip buttons */
+            height: 20px; /* Smaller size for skip buttons */
+            opacity: 0.9; /* More transparency for skip buttons */
+        }
+        #audio-control-box button:hover {
+            color: #a3a3ff;
+        }
+        #progress-container {
+            flex-grow: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+            width: 100%; /* Ensure it takes full width */
+        }
+        #progress-bar {
+            background: green; /* Change progress bar color to green */
+            height: 100%;
+            width: 0%;
+            transition: width 0.05s ease-in-out; /* Smoother transition */
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            #audio-control-box {
+                flex-direction: column;
+                height: auto;
+                width: 90%;
+                gap: 10px;
+                padding: 12px;
+            }
+            #progress-container {
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            /* Reduce padding in content container */
+            #content-container {
+                padding: 60px 1rem 2rem;
+                max-width: 90vw; /* allow scaling */
+            }
+
+            /* Scale down avatar */
+            #homepage .avatar {
+                width: 20vw; /* relative to viewport width */
+                max-width: 128px;
+                height: auto;
+            }
+
+            /* Scale down name font size */
+            #homepage .name {
+                font-size: 1.8rem;
+            }
+
+            /* Adjust nav height and padding */
+            #top-nav {
+                height: 40px;
+                padding: 0 15px;
+            }
+
+            /* Adjust audio controls for small screen */
+            #audio-control-box {
+                padding: 10px 15px;
+                height: auto;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            #top-nav a {
+                font-size: 0.9rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Video Background Wrapper -->
+    <div id="video-bg-wrapper" aria-hidden="true">
+        <video autoplay="" muted="" loop="" playsinline="">
+            <source src="https://codehs.com/uploads/34c10bf4eae6b80178ccc2a283b16e33" type="video/mp4">
+            Your browser does not support the video element.
+        </video>
+    </div>
+
+    <!-- Blurred Black Navigation Bar -->
+    <nav id="top-nav" role="navigation" aria-label="Primary navigation">
+        <a href="#" id="link-home" class="active">Home</a>
+        <a href="#" id="link-links">Links</a>
+        <a href="#" id="link-contact">Contact</a>
+    </nav>
+
+    <div id="content-container">
+        <main id="main-content">
+            <section id="homepage" aria-label="Homepage section">
+                <img id="avatar-img" class="avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile avatar" loading="lazy">
+                <h1 class="name" id="profile-name">3tx4n</h1>
+                <p class="bio" id="profile-bio">I Must Be a Scientist The Way I Put The D In A</p>
+                <div class="links-list" id="links-list">
+                    <a href="https://example.com" target="_blank" rel="noopener noreferrer nofollow">Example Link</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Audio element - hidden -->
+    <audio id="background-audio" preload="auto" loop="">
+        <source src="https://codehs.com/uploads/ce23e69234223eee41adf9568ce51117" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Audio Control Box -->
+    <div id="audio-control-box" aria-label="Audio player controls" role="region">
+        <div class="button-container">
+            <button id="btn-unskip" aria-label="Rewind 15 seconds" title="Rewind 15s" class="skip">
+                <img src="https://codehs.com/uploads/db0c214d451056a9b5b761238cac243f" alt="Skip Backward">
+            </button>
+            <button id="btn-play-pause" aria-label="Play music" title="Play">
+                <img src="https://codehs.com/uploads/96e7f5f9bd08cf417a37b6ec1f0b1742" alt="Play">
+            </button>
+            <button id="btn-skip" aria-label="Forward 15 seconds" title="Forward 15s" class="skip">
+                <img src="https://codehs.com/uploads/42590b7678eb2f98c5e9fc6367fc4df6" alt="Skip Forward">
+            </button>
+        </div>
+        <div id="progress-container" aria-label="Audio progress bar" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="15">
+            <div id="progress-bar" style="width: 15.3557%;"></div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const audio = document.getElementById('background-audio');
+            const btnPlayPause = document.getElementById('btn-play-pause');
+            const btnSkip = document.getElementById('btn-skip');
+            const btnUnskip = document.getElementById('btn-unskip');
+            const progressContainer = document.getElementById('progress-container');
+            const progressBar = document.getElementById('progress-bar');
+            const mainContent = document.getElementById('main-content');
+
+            // Function to load content dynamically
+            function loadContent(section) {
+                if (section === 'home') {
+                    mainContent.innerHTML = `
+                        <section id="homepage" aria-label="Homepage section">
+                            <img id="avatar-img" class="avatar" src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile avatar" loading="lazy">
+                            <h1 class="name" id="profile-name">3tx4n</h1>
+                            <p class="bio" id="profile-bio">I Must Be a Scientist The Way I Put The D In A</p>
+                            <div class="links-list" id="links-list">
+                                
+                            </div>
+                        </section>`;
+                } else if (section === 'links') {
+                    mainContent.innerHTML = `
+                        <div class="link-box">Box </div>
+                        <div class="link-box">Box 2</div>
+                        <div class="link-box">Box 3</div>
+                        <div class="link-box">Box 4</div>`;
+                } else if (section === 'contact') {
+                    mainContent.innerHTML = `<h2>Contact Section</h2><p>Contact us at...</p>`;
+                }
+                // Update the URL without reloading the page
+                history.pushState({ section }, '', `#${section}`);
+
+                // Update active link
+                document.querySelectorAll('#top-nav a').forEach(link => {
+                    link.classList.remove('active');
+                });
+                document.getElementById(`link-${section}`).classList.add('active');
+            }
+
+            // Event listeners for navigation
+            document.getElementById('link-home').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadContent('home');
+            });
+
+            document.getElementById('link-links').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadContent('links');
+            });
+
+            document.getElementById('link-contact').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadContent('contact');
+            });
+
+            // Update play/pause button icon and aria-label
+            function updatePlayPauseButton() {
+                if (audio.paused) {
+                    btnPlayPause.innerHTML = '<img src="https://codehs.com/uploads/96e7f5f9bd08cf417a37b6ec1f0b1742" alt="Play">';
+                    btnPlayPause.setAttribute('aria-label', 'Play music');
+                    btnPlayPause.title = 'Play';
+                } else {
+                    btnPlayPause.innerHTML = '<img src="https://codehs.com/uploads/06d83f4c702e63360de1c6e2639d3faa" alt="Pause">';
+                    btnPlayPause.setAttribute('aria-label', 'Pause music');
+                    btnPlayPause.title = 'Pause';
+                }
+            }
+
+            // Update progress bar
+            function updateProgress() {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = percent + '%';
+                progressContainer.setAttribute('aria-valuenow', Math.floor(percent));
+            }
+
+            // Click to seek audio
+            progressContainer.addEventListener('click', (e) => {
+                const rect = progressContainer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percent = clickX / rect.width;
+                if (audio.duration) {
+                    audio.currentTime = percent * audio.duration;
+                }
+            });
+
+            // Play/pause button toggle
+            btnPlayPause.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+                updatePlayPauseButton();
+            });
+
+            // Skip forward 15 seconds
+            btnSkip.addEventListener('click', () => {
+                if (audio.duration) {
+                    audio.currentTime = Math.min(audio.duration, audio.currentTime + 15);
+                }
+            });
+
+            // Unskip (rewind) 15 seconds
+            btnUnskip.addEventListener('click', () => {
+                audio.currentTime = Math.max(0, audio.currentTime - 15);
+            });
+
+            // Update UI on audio events
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('play', updatePlayPauseButton);
+            audio.addEventListener('pause', updatePlayPauseButton);
+            audio.addEventListener('ended', () => {
+                updatePlayPauseButton();
+                progressBar.style.width = '0%';
+            });
+
+            // Initial UI setup and set volume to 50%
+            audio.addEventListener('loadedmetadata', () => {
+                updateProgress();
+                updatePlayPauseButton();
+                audio.volume = 0.1;
+            });
+
+            // Autoplay music on page load if possible
+            window.addEventListener('load', () => {
+                audio.volume = 0.1;
+                audio.play().catch(() => {
+                    // Autoplay blocked; user can press play
+                });
+            });
+
+            // Handle back/forward navigation
+            window.addEventListener('popstate', (event) => {
+                if (event.state) {
+                    loadContent(event.state.section);
+                }
+            });
+
+            // Load initial content
+            loadContent('home');
+        })();
+    </script>
+</body>
+</html>
